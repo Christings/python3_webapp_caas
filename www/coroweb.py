@@ -121,19 +121,21 @@ class RequestHandler(object):
         if self._has_var_kw_arg or self._has_named_kw_args or self._required_kw_args:
             if request.method == 'POST':  # 判断客户端发来的方法是否为POST
                 if not request.content_type:  # 查询有没提交数据的格式（EncType）
-                    # return web.HTTPBadRequest('Missing Content-Type.')
-                    return web.HTTPBadRequest(text='Missing Content-Type.')  # 这里被廖大坑了，要有text
+                    return web.HTTPBadRequest('Missing Content-Type.')
+                    # return web.HTTPBadRequest(text='Missing Content-Type.')  # 这里被廖大坑了，要有text
                 ct = request.content_type.lower()  # 小写
                 if ct.startswith('application/json'):  # startswith
                     params = await request.json()  # Read request body decoded as json.
                     if not isinstance(params, dict):
-                        return web.HTTPBadRequest(text='JSON body must be object.')
+                        return web.HTTPBadRequest('JSON body must be object.')
+                        # return web.HTTPBadRequest(text='JSON body must be object.')
                     kw = params
                 elif ct.startswith('application/x-www-form-urlencoded') or ct.startswith('multipart/form-data'):
                     params = await request.post()  # reads POST parameters from request body.If method is not POST, PUT, PATCH, TRACE or DELETE or content_type is not empty or application/x-www-form-urlencoded or multipart/form-data returns empty multidict.
                     kw = dict(**params)
                 else:
-                    return web.HTTPBadRequest(text='Unsupported Content-Type: %s' % request.content_type)
+                    return web.HTTPBadRequest('Unsupported Content-Type: %s' % request.content_type)
+                    # return web.HTTPBadRequest(text='Unsupported Content-Type: %s' % request.content_type)
             if request.method == 'GET':
                 qs = request.query_string  # The query string in the URL
                 if qs:

@@ -22,13 +22,13 @@ def index(request):
         '__template__': 'blogs.html',
         'blogs': blogs
     }
-#
-# @get('/api/users')
-# async def api_get_users(): # 此处也需要改为异步
-#     users = await User.findAll(orderBy='created_at desc')
-#     for u in users:
-#         u.passwd = '421498'
-#     return dict(users=users)
+
+@get('/api/users')
+async def api_get_users(request): # 此处也需要改为异步
+    users = await User.findAll(orderBy='created_at desc')
+    for u in users:
+        u.passwd = '421498'
+    return dict(users=users)
 
 # @get('/')
 # async def index(request):
