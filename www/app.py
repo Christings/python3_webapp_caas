@@ -21,6 +21,7 @@ from www import orm
 from www.coroweb import add_routes, add_static
 
 
+# 初始化jinja2，以便其他函数使用jinja2模板
 def init_jinja2(app, **kw):
     logging.info('init jinja2...')
     options = dict(
@@ -43,11 +44,11 @@ def init_jinja2(app, **kw):
     app['__templating__'] = env
 
 
-async def logger_factory(app, handler):
-    async def logger(request):
-        logging.info('Request: %s %s' % (request.method, request.path))
+async def logger_factory(app, handler): #协程，两个参数
+    async def logger(request):#协程，request作为参数
+        logging.info('Request: %s %s' % (request.method, request.path))#日志
         # await asyncio.sleep(0.3)
-        return (await handler(request))
+        return (await handler(request))#返回
 
     return logger
 
@@ -65,7 +66,7 @@ async def data_factory(app, handler):
 
     return parse_data
 
-
+#函数返回值转化为`web.response`对象
 async def response_factory(app, handler):
     async def response(request):
         logging.info('Response handler...')
@@ -77,19 +78,20 @@ async def response_factory(app, handler):
             resp.content_type = 'application/octet-stream'
             return resp
         if isinstance(r, str):
-            if r.startswith('redirect:'):
-                return web.HTTPFound(r[9:])
+            if r.startswith('redirect:'): #重定向
+                return web.HTTPFound(r[9:])#转入别的网站
             resp = web.Response(body=r.encode('utf-8'))
             resp.content_type = 'text/html;charset=utf-8'
             return resp
         if isinstance(r, dict):
             template = r.get('__template__')
-            if template is None:
+            if template is None:#序列化JSON那章，传递数据
                 resp = web.Response(
-                    body=json.dumps(r, ensure_ascii=False, default=lambda o: o.__dict__).encode('utf-8'))
+                    body=json.dumps(r, ensure_ascii=False, default=lambda o: o.__dict__).encode('utf-8'))#https://docs.python.org/2/library/json.html#basic-usage
+                return resp
                 resp.content_type = 'application/json;charset=utf-8'
                 return resp
-            else:
+            else:#jinja2模板
                 resp = web.Response(body=app['__templating__'].get_template(template).render(**r).encode('utf-8'))
                 resp.content_type = 'text/html;charset=utf-8'
                 return resp
@@ -100,6 +102,7 @@ async def response_factory(app, handler):
             if isinstance(t, int) and t >= 100 and t < 600:
                 return web.Response(t, str(m))
         # default:
+        # default，错误
         resp = web.Response(body=str(r).encode('utf-8'))
         resp.content_type = 'text/plain;charset=utf-8'
         return resp
