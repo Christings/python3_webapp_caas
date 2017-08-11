@@ -10,9 +10,14 @@ import time, uuid
 
 from www.orm import Model, StringField, BooleanField, FloatField, TextField
 
+
 def next_id():
     return '%015d%s000' % (int(time.time() * 1000), uuid.uuid4().hex)
 
+'''
+注意到定义在User类中的__table__、id和name是类的属性，不是实例的属性。
+所以，在类级别上定义的属性用来描述User对象和表的映射关系，而实例属性必须通过__init__()方法去初始化，所以两者互不干扰
+'''
 class User(Model):
     __table__ = 'users'
 
@@ -23,6 +28,7 @@ class User(Model):
     name = StringField(ddl='varchar(50)')
     image = StringField(ddl='varchar(500)')
     created_at = FloatField(default=time.time)
+
 
 class Blog(Model):
     __table__ = 'blogs'
@@ -35,6 +41,7 @@ class Blog(Model):
     summary = StringField(ddl='varchar(200)')
     content = TextField()
     created_at = FloatField(default=time.time)
+
 
 class Comment(Model):
     __table__ = 'comments'
