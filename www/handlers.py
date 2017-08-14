@@ -21,7 +21,8 @@ _COOKIE_KEY = configs.session.secret
 
 
 def check_admin(request):
-    if request.__user__ is None or not request.__user__.admin:
+    # if request.__user__ is None or not request.__user__.admin:
+    if request.__user__ is None or request.__user__.admin:
         raise APIPermissionError()
 
 
@@ -97,9 +98,9 @@ def index(request):
 
 
 @get('/blog/{id}')
-def get_blog(id):
-    blog = yield from Blog.find(id)
-    comments = yield from Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
+async def get_blog(id):
+    blog = await Blog.find(id)
+    comments = await Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
     for c in comments:
         c.html_content = text2html(c.content)
     blog.html_content = www.markdown2.markdown(blog.content)
@@ -198,13 +199,13 @@ async def api_register_user(*, email, name, passwd):
 
 
 @get('/api/blogs/{id}')
-def api_get_blog(*, id):
-    blog = yield from Blog.find(id)
+async def api_get_blog(*, id):
+    blog = await Blog.find(id)
     return blog
 
 
 @post('/api/blogs')
-def api_create_blog(request, *, name, summary, content):
+async def api_create_blog(request, *, name, summary, content):
     check_admin(request)
     if not name or not name.strip():
         raise APIValueError('name', 'name cannot be empty.')
@@ -214,7 +215,7 @@ def api_create_blog(request, *, name, summary, content):
         raise APIValueError('content', 'content cannot be empty.')
     blog = Blog(user_id=request.__user__.id, user_name=request.__user__.name, user_image=request.__user__.image,
                 name=name.strip(), summary=summary.strip(), content=content.strip())
-    yield from blog.save()
+    await blog.save()
     return blog
 
 # @get('/api/users')
